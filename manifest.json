@@ -1,22 +1,26 @@
 {
-    "manifest_version": 2,
-    "name": "Image URL Printer",
+    "manifest_version": 3,
+    "name": "Web pinterest Scraper",
     "version": "1.0",
-    "description": "Prints the URLs of images on Pinterest - France",
-    "permissions": ["tabs", "activeTab"],
-    "content_scripts": [
-      {
-        "matches": ["*://*.pinterest.fr/*"],
-        "js": ["main.js"]
-      }
-    ],
-    "browser_action": {
+    "description": "Ceci est un outil Web pinterest Scraper",
+    "permissions": ["activeTab", "storage", "scripting", "tabs", "unlimitedStorage"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html",
       "default_icon": {
-        "16": "icon-16.png",
-        "48": "icon-48.png",
-        "128": "icon-128.png"
-      },
-      "default_title": "Print URL",
-      "default_popup": "popup.html"
-    }
+        "16": "icon/icon16.png",
+        "48": "icon/icon48.png",
+        "128": "icon/icon128.png"
+      }
+    },
+    "icons": {
+      "16": "icon/icon16.png",
+      "48": "icon/icon48.png",
+      "128": "icon/icon128.png"
+    },
+    "host_permissions": [
+      "https://*.pinterest.*/"
+    ]
   }
