@@ -120,34 +120,94 @@ class AppController:
 
         return pinterest_images
 
+class CustomButton(tk.Button):
+    def __init__(self, master=None, **kwargs):
+        # Button styles
+        self.button_bg = "#D3A550"
+        self.button_hover_bg = "#D01110"
+        self.button_border = 0
+        self.button_radius = "10%"
+        self.button_shadow = "#EBE7D0"
+        self.button_text_color = "#EBE7D0"
+
+        # Call the parent class constructor
+        super().__init__(master, **kwargs)
+
+        # Configure the button appearance
+        self.configure(bg=self.button_bg, fg=self.button_text_color,
+                       bd=self.button_border, relief=tk.FLAT, highlightthickness=0,
+                       activebackground=self.button_hover_bg, activeforeground=self.button_text_color)
+        self.configure(borderwidth=0, highlightthickness=0, highlightcolor=self.button_shadow,
+                       relief=tk.FLAT, padx=10, pady=5, highlightbackground=self.button_shadow)
+
+        # Bind hover events
+        self.bind("<Enter>", self.on_button_hover)
+        self.bind("<Leave>", self.on_button_leave)
+
+    def on_button_hover(self, event):
+        self.config(bg=self.button_hover_bg, relief=tk.FLAT)
+
+    def on_button_leave(self, event):
+        self.config(bg=self.button_bg, relief=tk.FLAT)
+
+class InfoStatusLabel(tk.Label):
+    def __init__(self, master=None, **kwargs):
+        # Label styles
+        self.text_size = 10
+        self.text_color = "#D01110"
+        self.text_width = "bold"
+        self.wrap_length = 150
+
+        # Call the parent class constructor
+        super().__init__(master, **kwargs)
+
+        # Configure the label appearance
+        self.configure(font=(None, self.text_size, self.text_width), fg=self.text_color, wraplength= self.wrap_length)
+
+
 class FileUploader:
     def __init__(self, root):
         self.root = root
+        self.root.configure(bg="#121110")
+        self.root.geometry("1024x512")
         self.file_names = []
         self.folder_destination = ""
 
-        self.root.title("File Uploader")
+        self.root.title("Downloader")
 
-        self.file_listbox = tk.Listbox(self.root, selectmode=tk.MULTIPLE, width=40)
-        self.file_listbox.pack(pady=10)
+        # self.list_files_frame = tk.Frame(self.root)
+        # self.list_files_frame.pack(padx=5, pady=5)
 
-        self.browse_files_button = tk.Button(self.root, text="Browse Files", command=self.browse_files)
-        self.browse_files_button.pack(pady=5)
+        self.file_listbox = tk.Listbox(self.root, selectmode=tk.MULTIPLE, width=100, bg="#EBE7D0", fg="#121110")
+        # self.file_listbox.pack(pady=5, padx=5, side=tk.LEFT)
+        self.file_listbox.grid(column=0, row=0, pady=5, padx=5)
 
-        self.folder_frame = tk.Frame(self.root)
-        self.folder_frame.pack(pady=5)
+        self.browse_files_button = CustomButton(self.root, text="Browse Files", command=self.browse_files)
+        # self.browse_files_button.pack(pady=5, padx=5, side=tk.LEFT)
+        self.browse_files_button.grid(column=1, row=0, pady=5, padx=5)
 
-        self.folder_label = tk.Label(self.folder_frame, text="Destination Path:")
-        self.folder_label.pack(side=tk.LEFT)
+        # self.folder_frame = tk.Frame(self.root)
+        # self.folder_frame.pack(pady=5, padx=5)
 
-        self.folder_entry = tk.Entry(self.folder_frame, width=30)
-        self.folder_entry.pack(side=tk.LEFT)
+        self.folder_entry = tk.Entry(self.root, width=100, bg="#EBE7D0", fg="#121110")
+        # self.folder_entry.pack(side=tk.LEFT, padx=5, pady=5)
+        self.folder_entry.grid(column=0, row=1, pady=5, padx=5)
 
-        self.browse_folder_button = tk.Button(self.root, text="Select Destination", command=self.browse_folder)
-        self.browse_folder_button.pack(pady=5)
+        self.browse_folder_button = CustomButton(self.root, text="Select Destination", command=self.browse_folder)
+        # self.browse_folder_button.pack(pady=5, padx=5)
+        self.browse_folder_button.grid(column=1, row=1, pady=5, padx=5)
 
-        self.upload_button = tk.Button(self.root, text="Download all files", command=self.download_files)
-        self.upload_button.pack(pady=5)
+        self.button_frame = tk.Frame(self.root, bg="#121110")
+        self.button_frame.grid(column=0, row=2, padx=5, pady=5)
+
+        self.upload_button = CustomButton(self.button_frame, text="Download all files", command=self.download_files)
+        self.upload_button.pack(pady=5, padx=5, side=tk.LEFT)
+        # self.upload_button.grid(column=0, row=2, pady=5, padx=5)
+
+        self.stop_button = CustomButton(self.button_frame, text="STOP", command=None)
+        self.stop_button.pack(padx=5, pady=5, side=tk.LEFT)
+        # self.stop_button.grid(column=1, row=2, pady=5, padx=5)
+
 
     def browse_files(self):
         home_directory = str(Path.home())
@@ -163,15 +223,21 @@ class FileUploader:
         self.folder_entry.insert(tk.END, self.folder_destination)
 
     def download_files(self):
-        if len(self.file_names) > 0:
-            for file_name in self.file_names:
-                app_controller = AppController(file_name,self.folder_destination)
+        if len(self.file_names) > 0 and self.folder_destination != "":
+            status_info = tk.Frame(self.root, bg="#121110")
+            status_info.grid(column=1, row=3, padx=5, pady=5)
+            for index, file_name in enumerate(self.file_names):
+                app_controller = AppController(file_name, self.folder_destination)
                 if app_controller.isFileValid():
+                    self.file_listbox.delete(index)
+                    status_info_label = InfoStatusLabel(status_info, text=f"Processing {file_name}")
+                    status_info_label.pack(pady=5)
                     app_controller.process()
+                    
                 else:
                     messagebox.showerror("ERROR", f"File {file_name} is not valid!")
         else:
-            print("No files selected.")
+            messagebox.showerror("ERROR", "No file selected OR destination folder not set!")
 
     def update_file_listbox(self):
         self.file_listbox.delete(0, tk.END)
