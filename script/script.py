@@ -8,7 +8,18 @@ from pathlib import Path
 import argparse
 
 class Logging:
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if not cls._instance:
+            cls._instance = cls()
+        return cls._instance
+
     def __init__(self):
+        if Logging._instance:
+            raise ValueError("Singleton instance already exists. Use Logging.get_instance() to retrieve it.")
+        
         # Configure the logger
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -39,7 +50,7 @@ class PinterestImage:
         self.url_image = url_image
         self.url_product = url_product
         self.image_name = image_name
-        self.log = Logging()
+        self.log = Logging.get_instance()
 
     def download_image(self, destination_path):
         try:
@@ -68,7 +79,7 @@ class AppController:
     def __init__(self, file_name, destination_path=None):
         self.file_name = file_name
         self.destination_path = os.path.join(destination_path, os.path.splitext(os.path.basename(file_name))[0]) #Fetch the file name only without extension 
-        self.log = Logging()
+        self.log = Logging.get_instance()
         
     def isFileValid(self):
         try:
@@ -251,7 +262,7 @@ class FileDownloaderCLI:
         self.list_files = list_files
 
     def download_files(self):
-        log = Logging()
+        log = Logging.get_instance()
         if len(self.list_files) > 0 and self.destination_folder != "":
             log.log_info(f"DOWNLOAD START!")
         
@@ -268,7 +279,7 @@ class FileDownloaderCLI:
 
 
 def main():
-    log = Logging()
+    log = Logging.get_instance()
 
     # Create the argument parser
     parser = argparse.ArgumentParser(description="Files downloader")
