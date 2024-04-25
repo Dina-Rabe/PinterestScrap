@@ -5,6 +5,7 @@ import csv
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
+import argparse
 
 class Logging:
     def __init__(self):
@@ -165,13 +166,13 @@ class InfoStatusLabel(tk.Label):
         self.configure(font=(None, self.text_size, self.text_width), fg=self.text_color, wraplength= self.wrap_length)
 
 
-class FileUploader:
-    def __init__(self, root):
+class FileDownloader:
+    def __init__(self, root, destination_folder, list_files):
         self.root = root
         self.root.configure(bg="#121110")
         self.root.geometry("1024x512")
-        self.file_names = []
-        self.folder_destination = ""
+        self.file_names = list_files
+        self.folder_destination = destination_folder
 
         self.root.title("Downloader")
 
@@ -244,7 +245,63 @@ class FileUploader:
         for file_name in self.file_names:
             self.file_listbox.insert(tk.END, file_name)
 
+class FileDownloaderCLI:
+    def __init__(self, destination_folder, list_files):
+        self.destination_folder = destination_folder
+        self.list_files = list_files
+
+    def download_files(self):
+        log = Logging()
+        if len(self.list_files) > 0 and self.destination_folder != "":
+            log.log_info(f"DOWNLOAD START!")
+        
+            for file_name in self.list_files:
+                app_controller = AppController(file_name, self.destination_folder)
+                if app_controller.isFileValid():
+                    app_controller.process()
+                    
+                else:
+                    log.log_error("ERROR: " + f"File {file_name} is not valid!")
+        else:
+            log.log_error("ERROR: " + "No file selected OR destination folder not set!")
+
+
+
+def main():
+    log = Logging()
+
+    # Create the argument parser
+    parser = argparse.ArgumentParser(description="Files downloader")
+    parser.add_argument("-g", "--gui", metavar="FILE", nargs="+", help="Launch the app in gui mode")
+    parser.add_argument("-d", "--destination", metavar="FOLDER", help="Destination folder for file processed")
+    parser.add_argument("-c", "--cli", metavar="FILE", nargs="+", help="Launch the app in cli mode")
+    
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    destination_folder = ""
+    list_files = []
+    if args.destination:
+        destination_folder = args.destination
+        log.log_info(f"Destination folder giving: {destination_folder}")
+    
+    if args.cli:
+        list_files = args.cli
+        log.log_info(f"CLI MODE START!")
+        files_downloader = FileDownloaderCLI(destination_folder, list_files)
+        files_downloader.download_files()
+        
+    if args.gui:
+        list_files = args.gui
+        log.log_info(f"GUI MODE START!")
+        root = tk.Tk()
+        files_downloader = FileDownloader(root, destination_folder, list_files)
+        root.mainloop()
+
+    
+
+
+
 if __name__ == "__main__":
-    root = tk.Tk()
-    file_uploader = FileUploader(root)
-    root.mainloop()
+    main()
+    
