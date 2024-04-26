@@ -39,10 +39,10 @@ function addtimeout(){
                 }
             }
             window.scrollTo(0, document.body.scrollHeight);
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise(r => setTimeout(r, 4000));
         }
         console.log("stop")
-    }, 5000);
+    }, 7000);
 }
 function removetimeout(){
     console.log(init)
