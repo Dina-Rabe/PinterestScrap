@@ -69,7 +69,7 @@ class PinterestImage:
 
             # Download the image
             urllib.request.urlretrieve(self.url_image, destination_file)
-            self.log.log_info(f"Image {image_filename} successfully downloaded to {destination_file}!")
+            self.log.log_info(f"Image {image_filename} successfully downloaded to {destination_file}")
             return True
         except Exception as e:
             self.log.log_error(str(e))
